@@ -1,0 +1,205 @@
+---
+// src/components/Navbar.astro
+
+// Definiujemy interfejs Props dla type safety
+interface Props {
+	logoText?: string;
+	sticky?: boolean;
+}
+
+// Destructuring props z domyślnymi wartościami
+const { logoText = 'TomDom', sticky = true } = Astro.props;
+
+// Definiujemy strukturę linków nawigacji
+const navLinks = [
+	{ href: '/o-mnie', label: 'O mnie' },
+	{ href: '/uslugi', label: 'Usługi' },
+	{ href: '/kontakt', label: 'Kontakt' },
+];
+---
+
+<nav
+	class:list={[
+		'z-50 w-full bg-white shadow-sm transition-all duration-300',
+		{ 'sticky top-0': sticky, relative: !sticky },
+	]}
+	aria-label="Główna nawigacja"
+>
+	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+		<div class="flex h-16 items-center justify-between">
+			<!-- Logo -->
+			<div class="flex-shrink-0">
+				<a
+					href="/"
+					class="text-2xl font-bold text-gray-900 transition-colors hover:text-blue-600"
+					aria-label="Strona główna"
+				>
+					{logoText}
+				</a>
+			</div>
+
+			<!-- Desktop Navigation -->
+			<div class="hidden md:block">
+				<ul class="flex space-x-8" role="list">
+					{
+						navLinks.map((link) => (
+							<li>
+								<a
+									href={link.href}
+									class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-700 transition-colors hover:border-blue-600 hover:text-gray-900"
+								>
+									{link.label}
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+
+			<!-- Mobile menu button -->
+			<div class="flex md:hidden">
+				<button
+					type="button"
+					class="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none focus:ring-inset"
+					aria-controls="mobile-menu"
+					aria-expanded="false"
+					id="mobile-menu-button"
+				>
+					<span class="sr-only">Otwórz menu główne</span>
+					<!-- Hamburger icon -->
+					<svg
+						class="block h-6 w-6"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-hidden="true"
+						id="hamburger-icon"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M4 6h16M4 12h16M4 18h16"></path>
+					</svg>
+					<!-- Close icon (hidden by default) -->
+					<svg
+						class="hidden h-6 w-6"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-hidden="true"
+						id="close-icon"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Mobile menu, hidden by default -->
+	<div
+		class="hidden md:hidden"
+		id="mobile-menu"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="space-y-1 px-4 pt-2 pb-3">
+			<ul class="space-y-1" role="list">
+				{
+					navLinks.map((link) => (
+						<li>
+							<a
+								href={link.href}
+								class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+							>
+								{link.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</div>
+</nav>
+
+<script>
+	// TypeScript w client-side script
+	const mobileMenuButton = document.getElementById(
+		'mobile-menu-button'
+	) as HTMLButtonElement | null;
+	const mobileMenu = document.getElementById(
+		'mobile-menu'
+	) as HTMLDivElement | null;
+	const hamburgerIcon = document.getElementById(
+		'hamburger-icon'
+	) as SVGElement | null;
+	const closeIcon = document.getElementById('close-icon') as SVGElement | null;
+
+	// Funkcja toggle menu
+	const toggleMobileMenu = (): void => {
+		if (!mobileMenu || !mobileMenuButton || !hamburgerIcon || !closeIcon)
+			return;
+
+		const isExpanded =
+			mobileMenuButton.getAttribute('aria-expanded') === 'true';
+
+		// Toggle aria-expanded
+		mobileMenuButton.setAttribute('aria-expanded', String(!isExpanded));
+
+		// Toggle menu visibility
+		mobileMenu.classList.toggle('hidden');
+
+		// Toggle icons
+		hamburgerIcon.classList.toggle('hidden');
+		hamburgerIcon.classList.toggle('block');
+		closeIcon.classList.toggle('hidden');
+		closeIcon.classList.toggle('block');
+	};
+
+	// Event listener
+	mobileMenuButton?.addEventListener('click', toggleMobileMenu);
+
+	// Close menu when clicking outside
+	document.addEventListener('click', (event: MouseEvent) => {
+		const target = event.target as Node;
+		if (
+			mobileMenu &&
+			!mobileMenu.classList.contains('hidden') &&
+			!mobileMenu.contains(target) &&
+			!mobileMenuButton?.contains(target)
+		) {
+			toggleMobileMenu();
+		}
+	});
+
+	// Close menu on escape key
+	document.addEventListener('keydown', (event: KeyboardEvent) => {
+		if (
+			event.key === 'Escape' &&
+			mobileMenu &&
+			!mobileMenu.classList.contains('hidden')
+		) {
+			toggleMobileMenu();
+		}
+	});
+</script>
+
+<style>
+	/* Dodatkowe style dla smooth transitions */
+	nav {
+		-webkit-backdrop-filter: blur(10px);
+		backdrop-filter: blur(10px);
+	}
+
+	/* Zapewniamy smooth scroll dla całej strony */
+	:global(html) {
+		scroll-behavior: smooth;
+	}
+</style>
